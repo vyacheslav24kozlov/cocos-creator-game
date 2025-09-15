@@ -7,7 +7,6 @@ import {
   KeyCode,
   Collider2D,
   Contact2DType,
-  IPhysics2DContact,
   view,
   UITransform,
 } from 'cc';
@@ -20,8 +19,10 @@ const {ccclass, property} = _decorator;
 
 @ccclass('BasketController')
 export class BasketController extends Component {
+  static SPEED = 300;
+
   @property
-  public speed: number = 300;
+  public speed: number = BasketController.SPEED;
 
   @property(GameManager)
   public gameManager: GameManager | null = null;
@@ -39,10 +40,7 @@ export class BasketController extends Component {
     input.on(Input.EventType.KEY_DOWN, this.onKeyDown, this);
     input.on(Input.EventType.KEY_UP, this.onKeyUp, this);
 
-    // Автоматически рассчитываем границу на основе ширины экрана и корзины
-    const visibleSize = view.getVisibleSize();
-    const basketWidth = this.node.getComponent(UITransform)?.width ?? 0;
-    this.boundary = visibleSize.width / 2 - basketWidth / 2;
+    this.boundary = this.computeBoundary();
 
     const collider = this.node.getComponent(Collider2D);
     if (collider) {
@@ -50,6 +48,13 @@ export class BasketController extends Component {
     } else {
       console.error('Basket node has no Collider2D — BEGIN_CONTACT will not fire.');
     }
+  }
+
+  private computeBoundary() {
+    // Автоматически рассчитываем границу на основе ширины экрана и корзины
+    const visibleSize = view.getVisibleSize();
+    const basketWidth = this.node.getComponent(UITransform)?.width ?? 0;
+    return visibleSize.width / 2 - basketWidth / 2;
   }
 
 
@@ -87,7 +92,7 @@ export class BasketController extends Component {
     }
   }
 
-  private onBeginContact(selfCollider: Collider2D, otherCollider: Collider2D, contact: IPhysics2DContact | null) {
+  private onBeginContact(selfCollider: Collider2D, otherCollider: Collider2D) {
     const fruit = otherCollider.getComponent(Fruit);
     if (fruit && this.gameManager && this.fruitSpawner) {
       fruit.onCaught(this.gameManager, this.fruitSpawner);

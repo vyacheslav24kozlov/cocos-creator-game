@@ -1,7 +1,11 @@
 {
-  "name": "Project2D",
+  "name": "cocos-creator-game",
   "uuid": "cd5ab5f9-aca1-43bf-a753-a4d76fc19007",
   "creator": {
-    "version": "3.8.7"
+    "version": "3.8.7",
+    "registry": {
+      "remote": {}
+    },
+    "dependencies": {}
   }
 }
