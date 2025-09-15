@@ -1,26 +1,39 @@
-import {_decorator, Component, Label, tween, Vec3, Node} from 'cc';
+import {_decorator, Component, Label, tween, Vec3, Node, Prefab, instantiate} from 'cc';
 import {GameEvents} from './GameEvents';
 
 const {ccclass, property} = _decorator;
 
 @ccclass('GameManager')
 export class GameManager extends Component {
-  static TIME_LEFT = 60;
+  static TIME_LEFT = 30;
+  static START_LIVES = 3;
 
   @property(Label)
-  public scoreLabel: Label | null = null;
+  private scoreLabel: Label | null = null;
 
   @property(Label)
-  public timerLabel: Label | null = null;
+  private timerLabel: Label | null = null;
 
   @property(Node)
   private gameOver: Node | null = null;
 
+  @property(Label)
+  private gameOverLabel: Label | null = null;
+
+  @property(Prefab)
+  private heartPrefab: Prefab | null = null;
+
+  @property(Node)
+  private heartsContainer: Node | null = null;
+
   private score: number = 0;
   private timeLeft: number = GameManager.TIME_LEFT;
+  private lives: number = GameManager.START_LIVES;
+  private heartNodes: Node[] = [];
 
   start() {
     this.updateUI();
+    this.setupHearts();
     this.schedule(this.tickTimer, 1);
     this.schedule(this.spawnLoop, 1);
 
@@ -32,20 +45,45 @@ export class GameManager extends Component {
     this.node.scene.on(GameEvents.BAD_FALLING_ITEM_CAUGHT, this.onBadFallingItemCaught, this);
   }
 
+  private setupHearts() {
+    if (!this.heartPrefab || !this.heartsContainer) {
+      console.error('Heart prefab or container is not assigned!');
+      return;
+    }
+
+    const spacing = 100; // distance between hearts
+    const startX = -((GameManager.START_LIVES - 1) * spacing) / 2; // center the row
+
+    for (let i = 0; i < GameManager.START_LIVES; i++) {
+      const heart = instantiate(this.heartPrefab);
+      heart.setPosition(startX + i * spacing, 0, 0); // set x, y, z
+      this.heartsContainer.addChild(heart);
+      this.heartNodes.push(heart);
+    }
+  }
+
   onDestroy() {
     this.node.scene.off(GameEvents.GOOD_FALLING_ITEM_CAUGHT, this.onGoodFallingItemCaught, this);
     this.node.scene.off(GameEvents.BAD_FALLING_ITEM_CAUGHT, this.onBadFallingItemCaught, this);
+    this.unschedule(this.tickTimer);
+    this.unschedule(this.spawnLoop);
   }
 
   private onBadFallingItemCaught() {
-    console.log('Bad item caught - game over!');
+    this.lives--;
+    this.updateUI();
+    if (this.lives >= 0 && this.lives < this.heartNodes.length) {
+      this.heartNodes[this.lives].active = false;
+    }
+    if (this.lives <= 0) {
+      this.endGame(false);
+    }
   }
 
   private onGoodFallingItemCaught() {
     this.addScore(1);
   }
 
-  // Новый метод, который испускает событие для FruitSpawner
   private spawnLoop() {
     this.node.scene.emit(GameEvents.SPAWN_FRUIT);
   }
@@ -68,7 +106,7 @@ export class GameManager extends Component {
     this.timeLeft--;
     this.updateUI();
     if (this.timeLeft <= 0) {
-      this.endGame();
+      this.endGame(true);
     }
   }
 
@@ -77,12 +115,13 @@ export class GameManager extends Component {
     if (this.timerLabel) this.timerLabel.string = `Time: ${this.timeLeft}`;
   }
 
-  private endGame() {
+  private endGame(timeEnded: boolean) {
     this.node.scene.emit(GameEvents.GAME_OVER);
     this.unschedule(this.tickTimer);
     this.unschedule(this.spawnLoop);
 
-    if (this.gameOver) {
+    if (this.gameOver && this.gameOverLabel) {
+      this.gameOverLabel.string = `${timeEnded ? 'Time Over' : 'Game Over'}\nYour score: ${this.score}`;
       this.gameOver.active = true;
     }
   }
@@ -90,6 +129,8 @@ export class GameManager extends Component {
   public restartGame() {
     this.score = 0;
     this.timeLeft = GameManager.TIME_LEFT;
+    this.lives = GameManager.START_LIVES;
+    this.heartNodes.forEach(heart => heart.active = true);
     this.updateUI();
 
     if (this.gameOver) {
