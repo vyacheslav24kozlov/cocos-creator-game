@@ -1,5 +1,5 @@
 import {_decorator, Component, Label, tween, Vec3, Node} from 'cc';
-import {FruitSpawner} from './FruitSpawner';
+import {GameEvents} from './GameEvents';
 
 const {ccclass, property} = _decorator;
 
@@ -16,22 +16,28 @@ export class GameManager extends Component {
   @property(Node)
   private gameOver: Node | null = null;
 
-  @property(FruitSpawner)
-  private fruitSpawner: FruitSpawner | null = null;
-
   private score: number = 0;
   private timeLeft: number = GameManager.TIME_LEFT;
 
   start() {
     this.updateUI();
     this.schedule(this.tickTimer, 1);
-    this.schedule(this.spawnLoop, 1); // управляем спавном фруктов
+    this.schedule(this.spawnLoop, 1); // Вызываем метод для запроса спавна
+
+    this.node.on(GameEvents.FRUIT_CAUGHT, this.onFruitCaught, this);
   }
 
+  onDestroy() {
+    this.node.off(GameEvents.FRUIT_CAUGHT, this.onFruitCaught, this);
+  }
+
+  private onFruitCaught() {
+    this.addScore(1);
+  }
+
+  // Новый метод, который испускает событие для FruitSpawner
   private spawnLoop() {
-    if (this.fruitSpawner) {
-      this.fruitSpawner.spawnFruit();
-    }
+    this.node.emit(GameEvents.SPAWN_FRUIT);
   }
 
   public addScore(amount: number) {
@@ -63,11 +69,7 @@ export class GameManager extends Component {
 
   private endGame() {
     this.unschedule(this.tickTimer);
-    this.unschedule(this.spawnLoop); // останавливаем спавн
-
-    if (this.fruitSpawner) {
-      this.fruitSpawner.clearAllFruits(); // убираем все фрукты со сцены
-    }
+    this.unschedule(this.spawnLoop);
 
     if (this.gameOver) {
       this.gameOver.active = true;

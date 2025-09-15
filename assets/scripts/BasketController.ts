@@ -11,11 +11,8 @@ import {
   UITransform,
 } from 'cc';
 import {Fruit} from './Fruit';
-import {GameManager} from './GameManager';
-import {FruitSpawner} from './FruitSpawner';
 
 const {ccclass, property} = _decorator;
-
 
 @ccclass('BasketController')
 export class BasketController extends Component {
@@ -24,17 +21,8 @@ export class BasketController extends Component {
   @property
   public speed: number = BasketController.SPEED;
 
-  @property(GameManager)
-  public gameManager: GameManager | null = null;
-
-
-  @property(FruitSpawner)
-  public fruitSpawner: FruitSpawner | null = null;
-
-
   private direction: number = 0;
   private boundary: number = 0;
-
 
   onLoad() {
     input.on(Input.EventType.KEY_DOWN, this.onKeyDown, this);
@@ -51,24 +39,20 @@ export class BasketController extends Component {
   }
 
   private computeBoundary() {
-    // Автоматически рассчитываем границу на основе ширины экрана и корзины
     const visibleSize = view.getVisibleSize();
     const basketWidth = this.node.getComponent(UITransform)?.width ?? 0;
     return visibleSize.width / 2 - basketWidth / 2;
   }
-
 
   onDestroy() {
     input.off(Input.EventType.KEY_DOWN, this.onKeyDown, this);
     input.off(Input.EventType.KEY_UP, this.onKeyUp, this);
   }
 
-
   private onKeyDown(event: EventKeyboard) {
     if (event.keyCode === KeyCode.ARROW_LEFT) this.direction = -1;
     if (event.keyCode === KeyCode.ARROW_RIGHT) this.direction = 1;
   }
-
 
   private onKeyUp(event: EventKeyboard) {
     if (event.keyCode === KeyCode.ARROW_LEFT || event.keyCode === KeyCode.ARROW_RIGHT) {
@@ -76,17 +60,13 @@ export class BasketController extends Component {
     }
   }
 
-
   update(dt: number) {
     if (this.direction !== 0) {
       const pos = this.node.position.clone();
       pos.x += this.direction * this.speed * dt;
 
-
-      // Ограничиваем позицию корзины по X
       if (pos.x > this.boundary) pos.x = this.boundary;
       if (pos.x < -this.boundary) pos.x = -this.boundary;
-
 
       this.node.setPosition(pos);
     }
@@ -94,8 +74,9 @@ export class BasketController extends Component {
 
   private onBeginContact(selfCollider: Collider2D, otherCollider: Collider2D) {
     const fruit = otherCollider.getComponent(Fruit);
-    if (fruit && this.gameManager && this.fruitSpawner) {
-      fruit.onCaught(this.gameManager, this.fruitSpawner);
+    if (fruit) {
+      // Корзина просто сообщает фрукту, что он пойман
+      fruit.onCaught();
     }
   }
 }
