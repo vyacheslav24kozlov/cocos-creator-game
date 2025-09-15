@@ -2,52 +2,37 @@ import {
   _decorator,
   Component,
   Prefab,
-  instantiate,
   Vec3,
-  NodePool,
   Node,
   UITransform,
   view
 } from 'cc';
-import {Fruit} from './Fruit';
+import {GameEvents} from './GameEvents';
+import {FruitPool} from './FallingItems/FruitPool';
 
 const {ccclass, property} = _decorator;
 
 @ccclass('FruitSpawner')
 export class FruitSpawner extends Component {
-  static MISS_Y = -400;
-
   @property([Prefab])
   public fruitPrefabs: Prefab[] = [];
 
-  @property(Node)
-  public basket: Node | null = null;
-
-  private pools: Map<string, NodePool> = new Map();
-  private missY: number = FruitSpawner.MISS_Y;
+  private pools: Map<string, FruitPool> = new Map();
 
   start() {
-    // Создаем пулы для всех типов фруктов
     for (const prefab of this.fruitPrefabs) {
-      this.pools.set(prefab.data.name, new NodePool());
+      this.pools.set(prefab.data.name, new FruitPool(prefab));
     }
-
-    // Вычисляем порог промаха по нижней грани корзины
-    this.missY = this.computeMissY(0);
+    this.setupListeners();
   }
 
-  private computeMissY(offset: number = 0): number {
-    if (!this.basket) return FruitSpawner.MISS_Y;
+  setupListeners() {
+    this.node.scene.on(GameEvents.SPAWN_FRUIT, this.spawnFruit, this);
+    this.node.scene.on(GameEvents.GAME_OVER, this.recycleAllFruits, this);
+  }
 
-    const basketUI = this.basket.getComponent(UITransform);
-    const spawnerUI = this.node.getComponent(UITransform);
-    if (!basketUI || !spawnerUI) return FruitSpawner.MISS_Y;
-
-    const bottomLocal = new Vec3(0, -basketUI.height * (1 - basketUI.anchorY), 0);
-    const bottomWorld = basketUI.convertToWorldSpaceAR(bottomLocal);
-    const bottomInSpawner = spawnerUI.convertToNodeSpaceAR(bottomWorld);
-
-    return bottomInSpawner.y + offset;
+  onDestroy() {
+    this.node.scene.off(GameEvents.SPAWN_FRUIT, this.spawnFruit, this);
   }
 
   public spawnFruit() {
@@ -55,14 +40,11 @@ export class FruitSpawner extends Component {
     const prefab = this.fruitPrefabs[Math.floor(Math.random() * this.fruitPrefabs.length)];
     const pool = this.pools.get(prefab.data.name)!;
 
-    let fruitNode: Node;
-    if (pool.size() > 0) {
-      fruitNode = pool.get()!;
-    } else {
-      fruitNode = instantiate(prefab);
-    }
-
+    const fruitNode = pool.get();
     fruitNode.setParent(this.node);
+    fruitNode.active = true;
+
+    fruitNode.once(GameEvents.FALLING_ITEM_MISSED, this.recycleFruit, this);
 
     const visibleSize = view.getVisibleSize();
     const fruitWidth = fruitNode.getComponent(UITransform)?.width ?? 0;
@@ -73,25 +55,19 @@ export class FruitSpawner extends Component {
   }
 
   public recycleFruit(node: Node) {
-    const pool = this.pools.get(node.name);
-    pool ? pool.put(node) : node.destroy();
-  }
+    node.off(GameEvents.FALLING_ITEM_MISSED, this.recycleFruit, this);
 
-  public clearAllFruits() {
-    for (const child of [...this.node.children]) {
-      this.recycleFruit(child);
+    const pool = this.pools.get(node.name);
+    if (pool) {
+      pool.put(node);
+    } else {
+      node.destroy();
     }
   }
 
-  update(dt: number) {
-    // Проверяем, упали ли фрукты ниже порога
-    for (const child of this.node.children) {
-      const fruit = child.getComponent(Fruit);
-      if (!fruit) continue;
-
-      if (child.position.y < this.missY) {
-        this.recycleFruit(child);
-      }
+  public recycleAllFruits() {
+    for (const child of [...this.node.children]) {
+      this.recycleFruit(child);
     }
   }
 }
