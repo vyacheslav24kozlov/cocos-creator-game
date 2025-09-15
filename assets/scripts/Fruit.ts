@@ -1,5 +1,5 @@
-import { _decorator, Component, tween, Vec3 } from 'cc';
-import { GameEvents } from './GameEvents';
+import {_decorator, Component, tween, Vec3, UITransform} from 'cc';
+import {GameEvents} from './GameEvents';
 
 const {ccclass, property} = _decorator;
 
@@ -11,6 +11,18 @@ export class Fruit extends Component {
   private isCaught: boolean = false;
 
   private missY = -950; // Y-координата, ниже которой фрукт считается пропущенным
+
+  start() {
+    this.missY = this.computeMissY();
+  }
+
+  private computeMissY(): number {
+    const canvas = this.node.scene.getChildByName('Canvas');
+    if (!canvas) return this.missY; // fallback
+    const heightCanvas = canvas.getComponent(UITransform)?.height ?? 0;
+    const heightComponent = this.node.getComponent(UITransform)?.height ?? 0;
+    return -(heightCanvas - heightComponent) / 2;
+  }
 
   update(dt: number) {
     if (this.isCaught) {
@@ -39,8 +51,8 @@ export class Fruit extends Component {
     tween(this.node)
       .to(
         0.25,
-        { scale: new Vec3(0, 0, 0) },
-        { easing: 'quadOut' }
+        {scale: new Vec3(0, 0, 0)},
+        {easing: 'quadOut'}
       )
       .call(() => {
         this.node.setScale(new Vec3(1, 1, 1));
