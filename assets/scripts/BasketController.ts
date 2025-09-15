@@ -10,7 +10,7 @@ import {
   view,
   UITransform,
 } from 'cc';
-import {Fruit} from './Fruit';
+import {FallingItem} from './FallingItems/FallingItem';
 
 const {ccclass, property} = _decorator;
 
@@ -73,7 +73,7 @@ export class BasketController extends Component {
   }
 
   private onBeginContact(selfCollider: Collider2D, otherCollider: Collider2D) {
-    const fruit = otherCollider.getComponent(Fruit);
+    const fruit = otherCollider.getComponent(FallingItem);
     if (fruit) {
       // Корзина просто сообщает фрукту, что он пойман
       fruit.onCaught();

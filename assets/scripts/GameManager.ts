@@ -24,14 +24,24 @@ export class GameManager extends Component {
     this.schedule(this.tickTimer, 1);
     this.schedule(this.spawnLoop, 1);
 
-    this.node.scene.on(GameEvents.FRUIT_CAUGHT, this.onFruitCaught, this);
+    this.setupListeners();
+  }
+
+  private setupListeners() {
+    this.node.scene.on(GameEvents.GOOD_FALLING_ITEM_CAUGHT, this.onGoodFallingItemCaught, this);
+    this.node.scene.on(GameEvents.BAD_FALLING_ITEM_CAUGHT, this.onBadFallingItemCaught, this);
   }
 
   onDestroy() {
-    this.node.scene.off(GameEvents.FRUIT_CAUGHT, this.onFruitCaught, this);
+    this.node.scene.off(GameEvents.GOOD_FALLING_ITEM_CAUGHT, this.onGoodFallingItemCaught, this);
+    this.node.scene.off(GameEvents.BAD_FALLING_ITEM_CAUGHT, this.onBadFallingItemCaught, this);
   }
 
-  private onFruitCaught() {
+  private onBadFallingItemCaught() {
+    console.log('Bad item caught - game over!');
+  }
+
+  private onGoodFallingItemCaught() {
     this.addScore(1);
   }
 

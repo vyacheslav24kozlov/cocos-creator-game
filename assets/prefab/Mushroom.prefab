@@ -1,7 +1,7 @@
 [
   {
     "__type__": "cc.Prefab",
-    "_name": "Apple",
+    "_name": "Mushroom",
     "_objFlags": 0,
     "__editorExtras__": {},
     "_native": "",
@@ -13,7 +13,7 @@
   },
   {
     "__type__": "cc.Node",
-    "_name": "Apple",
+    "_name": "Mushroom",
     "_objFlags": 0,
     "__editorExtras__": {},
     "_parent": null,
@@ -41,8 +41,8 @@
     },
     "_lpos": {
       "__type__": "cc.Vec3",
-      "x": 0,
-      "y": 400,
+      "x": -378.89056650584644,
+      "y": -97.96913793399858,
       "z": 0
     },
     "_lrot": {
@@ -82,8 +82,8 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 113.166667,
-      "height": 144.666667
+      "width": 133.833333,
+      "height": 155.333333
     },
     "_anchorPoint": {
       "__type__": "cc.Vec2",
@@ -94,7 +94,7 @@
   },
   {
     "__type__": "cc.CompPrefabInfo",
-    "fileId": "cf/biEM/tAKb3/2h4qn89/"
+    "fileId": "a3vIpwWUhElZuMTeNwcK2S"
   },
   {
     "__type__": "cc.Sprite",
@@ -119,7 +119,7 @@
       "a": 255
     },
     "_spriteFrame": {
-      "__uuid__": "f2c93964-66f7-412f-8dce-b44c63cf9af3@f9941",
+      "__uuid__": "308fa96c-aef4-4e05-a5fa-0d17cbdc17d0@f9941",
       "__expectedType__": "cc.SpriteFrame"
     },
     "_type": 0,
@@ -139,7 +139,7 @@
   },
   {
     "__type__": "cc.CompPrefabInfo",
-    "fileId": "8780n2dRBH7aESnjLMftf6"
+    "fileId": "9bltMqNXxCT7yb4Pn3zLkw"
   },
   {
     "__type__": "cc.RigidBody2D",
@@ -173,7 +173,7 @@
   },
   {
     "__type__": "cc.CompPrefabInfo",
-    "fileId": "74xLVglFZEXqwIw8e6p+cZ"
+    "fileId": "fe1o+x3bJNPbtjzObLis73"
   },
   {
     "__type__": "cc.CircleCollider2D",
@@ -198,15 +198,15 @@
       "x": 0,
       "y": 0
     },
-    "_radius": 65,
+    "_radius": 70,
     "_id": ""
   },
   {
     "__type__": "cc.CompPrefabInfo",
-    "fileId": "abmoQwoK5AxLr8SfM8mBiW"
+    "fileId": "e9P0JNwdVAmYHiH1wbUw8o"
   },
   {
-    "__type__": "e1170lXnyZBNJZ9x6g+3xoO",
+    "__type__": "da557tZLDJOAIu1dt+DSS5h",
     "_name": "",
     "_objFlags": 0,
     "__editorExtras__": {},
@@ -222,7 +222,7 @@
   },
   {
     "__type__": "cc.CompPrefabInfo",
-    "fileId": "e3qZcj/VFGD4E4AnG9Crd5"
+    "fileId": "b0RjgZOghFL55184W26wyD"
   },
   {
     "__type__": "cc.PrefabInfo",
@@ -232,7 +232,7 @@
     "asset": {
       "__id__": 0
     },
-    "fileId": "6eqZqOAN5Lr6YQQKMnhIrZ",
+    "fileId": "9eRwrYrqpL6I0h0D34Z8LG",
     "instance": null,
     "targetOverrides": null
   }

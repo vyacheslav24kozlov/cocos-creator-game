@@ -8,7 +8,7 @@ import {
   view
 } from 'cc';
 import {GameEvents} from './GameEvents';
-import {FruitPool} from './FruitPool';
+import {FruitPool} from './FallingItems/FruitPool';
 
 const {ccclass, property} = _decorator;
 
@@ -44,7 +44,7 @@ export class FruitSpawner extends Component {
     fruitNode.setParent(this.node);
     fruitNode.active = true;
 
-    fruitNode.once(GameEvents.FRUIT_MISSED, this.recycleFruit, this);
+    fruitNode.once(GameEvents.FALLING_ITEM_MISSED, this.recycleFruit, this);
 
     const visibleSize = view.getVisibleSize();
     const fruitWidth = fruitNode.getComponent(UITransform)?.width ?? 0;
@@ -55,7 +55,7 @@ export class FruitSpawner extends Component {
   }
 
   public recycleFruit(node: Node) {
-    node.off(GameEvents.FRUIT_MISSED, this.recycleFruit, this);
+    node.off(GameEvents.FALLING_ITEM_MISSED, this.recycleFruit, this);
 
     const pool = this.pools.get(node.name);
     if (pool) {
