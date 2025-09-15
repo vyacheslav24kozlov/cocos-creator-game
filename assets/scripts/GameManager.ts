@@ -22,13 +22,13 @@ export class GameManager extends Component {
   start() {
     this.updateUI();
     this.schedule(this.tickTimer, 1);
-    this.schedule(this.spawnLoop, 1); // Вызываем метод для запроса спавна
+    this.schedule(this.spawnLoop, 1);
 
-    this.node.on(GameEvents.FRUIT_CAUGHT, this.onFruitCaught, this);
+    this.node.scene.on(GameEvents.FRUIT_CAUGHT, this.onFruitCaught, this);
   }
 
   onDestroy() {
-    this.node.off(GameEvents.FRUIT_CAUGHT, this.onFruitCaught, this);
+    this.node.scene.off(GameEvents.FRUIT_CAUGHT, this.onFruitCaught, this);
   }
 
   private onFruitCaught() {
@@ -37,7 +37,7 @@ export class GameManager extends Component {
 
   // Новый метод, который испускает событие для FruitSpawner
   private spawnLoop() {
-    this.node.emit(GameEvents.SPAWN_FRUIT);
+    this.node.scene.emit(GameEvents.SPAWN_FRUIT);
   }
 
   public addScore(amount: number) {
@@ -68,6 +68,7 @@ export class GameManager extends Component {
   }
 
   private endGame() {
+    this.node.scene.emit(GameEvents.GAME_OVER);
     this.unschedule(this.tickTimer);
     this.unschedule(this.spawnLoop);
 

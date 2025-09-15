@@ -23,12 +23,16 @@ export class FruitSpawner extends Component {
     for (const prefab of this.fruitPrefabs) {
       this.pools.set(prefab.data.name, new FruitPool(prefab));
     }
-    // Подписываемся на событие запроса спавна
-    this.node.on(GameEvents.SPAWN_FRUIT, this.spawnFruit, this);
+    this.setupListeners();
+  }
+
+  setupListeners() {
+    this.node.scene.on(GameEvents.SPAWN_FRUIT, this.spawnFruit, this);
+    this.node.scene.on(GameEvents.GAME_OVER, this.recycleAllFruits, this);
   }
 
   onDestroy() {
-    this.node.off(GameEvents.SPAWN_FRUIT, this.spawnFruit, this);
+    this.node.scene.off(GameEvents.SPAWN_FRUIT, this.spawnFruit, this);
   }
 
   public spawnFruit() {
@@ -40,7 +44,7 @@ export class FruitSpawner extends Component {
     fruitNode.setParent(this.node);
     fruitNode.active = true;
 
-    fruitNode.on(GameEvents.FRUIT_MISSED, this.recycleFruit, this);
+    fruitNode.once(GameEvents.FRUIT_MISSED, this.recycleFruit, this);
 
     const visibleSize = view.getVisibleSize();
     const fruitWidth = fruitNode.getComponent(UITransform)?.width ?? 0;
@@ -61,7 +65,7 @@ export class FruitSpawner extends Component {
     }
   }
 
-  public clearAllFruits() {
+  public recycleAllFruits() {
     for (const child of [...this.node.children]) {
       this.recycleFruit(child);
     }

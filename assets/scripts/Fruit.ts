@@ -10,6 +10,8 @@ export class Fruit extends Component {
 
   private isCaught: boolean = false;
 
+  private missY = -950; // Y-координата, ниже которой фрукт считается пропущенным
+
   update(dt: number) {
     if (this.isCaught) {
       return;
@@ -20,9 +22,9 @@ export class Fruit extends Component {
     this.node.setPosition(pos);
 
     // Проверяем, не упал ли фрукт ниже границы
-    if (pos.y < -400) {
+    if (pos.y < this.missY) {
+      this.node.active = false;
       this.node.emit(GameEvents.FRUIT_MISSED, this.node);
-      this.node.active = false; // "Убираем" фрукт, пока его не переработает Spawner
     }
   }
 
@@ -31,7 +33,7 @@ export class Fruit extends Component {
     this.isCaught = true;
 
     // Фрукт сообщает, что его поймали
-    this.node.emit(GameEvents.FRUIT_CAUGHT, this.node);
+    this.node.scene.emit(GameEvents.FRUIT_CAUGHT, this.node);
 
     // Анимация попадания фрукта в корзину
     tween(this.node)
@@ -41,11 +43,10 @@ export class Fruit extends Component {
         { easing: 'quadOut' }
       )
       .call(() => {
-        // После анимации фрукт готов к переработке
-        this.node.emit(GameEvents.FRUIT_MISSED, this.node); // Используем то же событие для переработки
         this.node.setScale(new Vec3(1, 1, 1));
         this.isCaught = false;
         this.node.active = false;
+        this.node.emit(GameEvents.FRUIT_MISSED, this.node);
       })
       .start();
   }
