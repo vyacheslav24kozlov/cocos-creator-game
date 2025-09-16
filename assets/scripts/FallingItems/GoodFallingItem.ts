@@ -7,6 +7,7 @@ const {ccclass} = _decorator;
 @ccclass('GoodFallingItem')
 export class GoodFallingItem extends FallingItem {
   public onCaught() {
+    // предотвращаем повторное срабатывание
     if (this.isCaught) return;
     super.onCaught();
     // хороший продукт сообщает, что его поймали

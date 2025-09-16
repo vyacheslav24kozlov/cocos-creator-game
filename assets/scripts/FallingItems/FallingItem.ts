@@ -10,9 +10,11 @@ export class FallingItem extends Component {
 
   protected isCaught: boolean = false;
 
-  private missY = -950; // Y-координата, ниже которой фрукт считается пропущенным
+  // Y-координата, ниже которой item считается пропущенным
+  private missY = -950;
 
   start() {
+    // высчитываем missY на основе высоты Canvas и компонента item
     this.missY = this.computeMissY();
   }
 
@@ -33,7 +35,7 @@ export class FallingItem extends Component {
     pos.y -= this.fallSpeed * dt;
     this.node.setPosition(pos);
 
-    // Проверяем, не упал ли фрукт ниже границы
+    // Проверяем, не упал ли item ниже границы
     if (pos.y < this.missY) {
       this.node.active = false;
       this.node.emit(GameEvents.FALLING_ITEM_MISSED, this.node);
@@ -42,7 +44,7 @@ export class FallingItem extends Component {
 
   public onCaught() {
     this.isCaught = true;
-    // Анимация попадания фрукта в корзину
+    // Анимация попадания item в корзину
     tween(this.node)
       .to(
         0.25,

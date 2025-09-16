@@ -7,35 +7,35 @@ import {
   UITransform,
   view
 } from 'cc';
-import {GameEvents} from './GameEvents';
-import {FruitPool} from './FallingItems/FruitPool';
+import {GameEvents} from '../GameEvents';
+import {ItemPool} from './ItemPool';
 
 const {ccclass, property} = _decorator;
 
-@ccclass('FruitSpawner')
-export class FruitSpawner extends Component {
+@ccclass('FallingItemSpawner')
+export class FallingItemSpawner extends Component {
   @property([Prefab])
   public fruitPrefabs: Prefab[] = [];
 
-  private pools: Map<string, FruitPool> = new Map();
+  private pools: Map<string, ItemPool> = new Map();
 
   start() {
     for (const prefab of this.fruitPrefabs) {
-      this.pools.set(prefab.data.name, new FruitPool(prefab));
+      this.pools.set(prefab.data.name, new ItemPool(prefab));
     }
     this.setupListeners();
   }
 
   setupListeners() {
-    this.node.scene.on(GameEvents.SPAWN_FRUIT, this.spawnFruit, this);
-    this.node.scene.on(GameEvents.GAME_OVER, this.recycleAllFruits, this);
+    this.node.scene.on(GameEvents.SPAWN_FRUIT, this.spawnItem, this);
+    this.node.scene.on(GameEvents.GAME_OVER, this.recycleAllItems, this);
   }
 
   onDestroy() {
-    this.node.scene.off(GameEvents.SPAWN_FRUIT, this.spawnFruit, this);
+    this.node.scene.off(GameEvents.SPAWN_FRUIT, this.spawnItem, this);
   }
 
-  public spawnFruit() {
+  public spawnItem() {
     if (this.fruitPrefabs.length === 0) return;
     const prefab = this.fruitPrefabs[Math.floor(Math.random() * this.fruitPrefabs.length)];
     const pool = this.pools.get(prefab.data.name)!;
@@ -44,7 +44,7 @@ export class FruitSpawner extends Component {
     fruitNode.setParent(this.node);
     fruitNode.active = true;
 
-    fruitNode.once(GameEvents.FALLING_ITEM_MISSED, this.recycleFruit, this);
+    fruitNode.once(GameEvents.FALLING_ITEM_MISSED, this.recycleItem, this);
 
     const visibleSize = view.getVisibleSize();
     const fruitWidth = fruitNode.getComponent(UITransform)?.width ?? 0;
@@ -54,8 +54,8 @@ export class FruitSpawner extends Component {
     fruitNode.setPosition(new Vec3(x, 0, 0));
   }
 
-  public recycleFruit(node: Node) {
-    node.off(GameEvents.FALLING_ITEM_MISSED, this.recycleFruit, this);
+  public recycleItem(node: Node) {
+    node.off(GameEvents.FALLING_ITEM_MISSED, this.recycleItem, this);
 
     const pool = this.pools.get(node.name);
     if (pool) {
@@ -65,9 +65,9 @@ export class FruitSpawner extends Component {
     }
   }
 
-  public recycleAllFruits() {
+  public recycleAllItems() {
     for (const child of [...this.node.children]) {
-      this.recycleFruit(child);
+      this.recycleItem(child);
     }
   }
 }

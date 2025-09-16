@@ -28,8 +28,13 @@ export class BasketController extends Component {
     input.on(Input.EventType.KEY_DOWN, this.onKeyDown, this);
     input.on(Input.EventType.KEY_UP, this.onKeyUp, this);
 
+    // Вычисляем границы перемещения корзины
     this.boundary = this.computeBoundary();
 
+    this.setupColliderListener();
+  }
+
+  private setupColliderListener() {
     const collider = this.node.getComponent(Collider2D);
     if (collider) {
       collider.on(Contact2DType.BEGIN_CONTACT, this.onBeginContact, this);
@@ -72,10 +77,10 @@ export class BasketController extends Component {
     }
   }
 
-  private onBeginContact(selfCollider: Collider2D, otherCollider: Collider2D) {
+  private onBeginContact(_: Collider2D, otherCollider: Collider2D) {
     const fruit = otherCollider.getComponent(FallingItem);
     if (fruit) {
-      // Корзина просто сообщает фрукту, что он пойман
+      // Корзина сообщает item, что он пойман
       fruit.onCaught();
     }
   }

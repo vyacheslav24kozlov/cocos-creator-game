@@ -33,7 +33,8 @@ export class GameManager extends Component {
 
   start() {
     this.updateUI();
-    this.setupHearts();
+    this.setupHeart();
+    // таймер и спавн items
     this.schedule(this.tickTimer, 1);
     this.schedule(this.spawnLoop, 1);
 
@@ -41,22 +42,25 @@ export class GameManager extends Component {
   }
 
   private setupListeners() {
+    // слушаем события попадания в корзину хороши и плохих items
     this.node.scene.on(GameEvents.GOOD_FALLING_ITEM_CAUGHT, this.onGoodFallingItemCaught, this);
     this.node.scene.on(GameEvents.BAD_FALLING_ITEM_CAUGHT, this.onBadFallingItemCaught, this);
   }
 
-  private setupHearts() {
+  private setupHeart() {
     if (!this.heartPrefab || !this.heartsContainer) {
       console.error('Heart prefab or container is not assigned!');
       return;
     }
 
-    const spacing = 100; // distance between hearts
-    const startX = -((GameManager.START_LIVES - 1) * spacing) / 2; // center the row
+    // расстояние между жизнями в виде сердечек
+    const spacing = 100;
+    const startX = -((GameManager.START_LIVES - 1) * spacing) / 2;
 
     for (let i = 0; i < GameManager.START_LIVES; i++) {
       const heart = instantiate(this.heartPrefab);
-      heart.setPosition(startX + i * spacing, 0, 0); // set x, y, z
+      // вычисляем позицию по X для равномерного распределения
+      heart.setPosition(startX + i * spacing, 0, 0);
       this.heartsContainer.addChild(heart);
       this.heartNodes.push(heart);
     }
@@ -71,7 +75,6 @@ export class GameManager extends Component {
 
   private onBadFallingItemCaught() {
     this.lives--;
-    this.updateUI();
     if (this.lives >= 0 && this.lives < this.heartNodes.length) {
       this.heartNodes[this.lives].active = false;
     }
@@ -95,6 +98,7 @@ export class GameManager extends Component {
     if (this.scoreLabel) {
       const node = this.scoreLabel.node;
       node.setScale(new Vec3(1, 1, 1));
+      // анимация добавления очков
       tween(node)
         .to(0.15, {scale: new Vec3(1.1, 1.1, 1)}, {easing: 'quadOut'})
         .to(0.15, {scale: new Vec3(1, 1, 1)}, {easing: 'bounceOut'})
@@ -116,6 +120,7 @@ export class GameManager extends Component {
   }
 
   private endGame(timeEnded: boolean) {
+    // эмитим событие для удаления всех оставшихся items со сцены
     this.node.scene.emit(GameEvents.GAME_OVER);
     this.unschedule(this.tickTimer);
     this.unschedule(this.spawnLoop);
